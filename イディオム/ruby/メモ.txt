@@ -1,0 +1,21 @@
+gemfileに書き、bundle install する。
+require 'sorcery'で読み込む。
+include(extend)Sorceryすると、'sorcery/model'が読み込まれる。
+
+include(extend)Sorcery::Model
+require 'sorcery/model/temporary_token'
+require 'sorcery/model/config'
+authenticates_with_sorcery!メソッドが使用可能。
+class Config
+
+authenticates_with_sorcery!
+Config.new
+extend ClassMethods
+
+ClassMethods
+
+include(extend)Sorcery::Model::Adapters
+require 'sorcery/adapters/base_adapter'
+class BaseAdapter
+
+
