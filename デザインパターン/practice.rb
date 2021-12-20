@@ -1,72 +1,41 @@
-require "find"
+require 'observer'
 
-class Expression
-  def |(other)
-    Or.new(self, other)
+class Employee
+  include Observable
+  attr_reader :name,:title,:salary
+
+  def initialize(name,title,salary)
+    @name = name
+    @title = title
+    @salary = salary
+    add_observer(Payroll.new)
+    add_observer(TaxMan.new)
   end
 
-  def &(other)
-    And.new(self, other)
-  end
-end
-
-class FileName < Expression
-
-  def initialize(pattern)
-    @pattern = pattern
-  end
-
-  def evaluate(dir)
-    results = []
-    Find.find(dir) do |p|
-      next unless File.file?(p)
-      name = File.basename(p)
-      results << p if File.fnmatch(@pattern,name)
-    end
-    results
-  end
-end
-# 終端以外の表現(構造木の節) NonterminalExpression
-class Not < Expression
-  def initialize(expression)
-    @expression = expression
-  end
-
-  def evaluate(dir)
-    All.new.evaluate(dir) - @expression.evaluate(dir)
+  def salary=(new_salary)
+    @salary = new_salary
+    changed
+    notify_observers(self)
   end
 end
 
-# 終端以外の表現(構造木の節) NonterminalExpression
-# Or: 2ファイル検索式をORで結合する
-class Or < Expression
-  def initialize(expression1, expression2)
-    @expression1 = expression1
-    @expression2 = expression2
+class Payroll
+  def update(changed_employee)
+    text =
+        <<TEXT
+彼の給料は#{changed_employee.salary}に変更されました。
+#{changed_employee.title}のために新しい小切手を発行します。
+TEXT
+    puts text
   end
 
-  def evaluate(dir)
-    result1 = @expression1.evaluate(dir)
-    result2 = @expression2.evaluate(dir)
-    (result1 + result2).sort.uniq
+end
+class TaxMan
+  def update(changed_employee)
+    puts "#{changed_employee.name}に新しい請求書を送ります"
   end
 end
 
-# 終端以外の表現(構造木の節) NonterminalExpression
-# And: 2ファイル検索式をANDで結合する
-class And < Expression
-  def initialize(expression1, expression2)
-    @expression1 = expression1
-    @expression2 = expression2
-  end
+employ = Employee.new("alice","学費",300000)
+employ.salary = 250000
 
-  def evaluate(dir)
-    result1 = @expression1.evaluate(dir)
-    result2 = @expression2.evaluate(dir)
-    (result1 & result2)
-  end
-end
-
-expression1 = FileName.new('*.mp3')
-expression2 = FileName.new('big*')
-And.new(expression1,expression2)
