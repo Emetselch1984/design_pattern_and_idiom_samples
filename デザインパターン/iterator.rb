@@ -1,58 +1,60 @@
 # 記事を表す(集約オブジェクト中の要素)
-
 class Article
-  # 記事のタイトル
-  attr_reader :title
-
   def initialize(title)
     @title = title
   end
+
+  # 記事のタイトル
+  attr_reader :title
 end
 
+# ブログを表す(集約オブジェクト)
 class Blog
-  attr_reader :articles
   def initialize
     @articles = []
   end
 
+  # 指定インデックスの要素を返す
   def get_article_at(index)
-    articles[index]
+    @articles[index]
   end
 
+  # 要素(Article)を追加する
   def add_article(article)
-    articles << article
+    @articles << article
   end
 
+  # 要素(Article)の数を返す
   def length
-    articles.length
+    @articles.length
   end
 
+  # イーテレータの生成
   def iterator
     BlogIterator.new(self)
   end
 end
 
+# 外部イーテレータ
 class BlogIterator
-  attr_reader :blog
-  attr_accessor :index
   ZERO = 0.freeze
-
   def initialize(blog)
     @blog = blog
     @index = ZERO
   end
 
+  # 次のindexの要素が存在するかをtrue/falseで返す
   def has_next?
-    self.index < blog.length
+    @index < @blog.length
   end
 
+  # indexを1つ進めて、次のArticleクラスを返す
   def next_article
-    article = self.has_next? ? blog.get_article_at(index) : nil
-    self.index = self.index + 1
+    article = self.has_next? ? @blog.get_article_at(@index) : nil
+    @index = @index + 1
     article
   end
 end
-
 blog = Blog.new
 blog.add_article(Article.new("デザインパターン1"))
 blog.add_article(Article.new("デザインパターン2"))
@@ -64,5 +66,3 @@ while iterator.has_next?
   article = iterator.next_article
   puts article.title
 end
-# 配列のサイズより低い間、
-# 要素を取得し、 indexを増やす
