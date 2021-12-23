@@ -1,91 +1,109 @@
-class SaltWater
-  attr_accessor :water,:salt
+require "fileutils"
 
-  def initialize(water,salt)
-    @water = water
-    @salt = salt
+class CreateFile
+  attr_reader :path,:contents
+
+  def initialize(path,contents)
+    @path = path
+    @contents = contents
   end
 
-  def add_material(material_amount)
-    self.salt += material_amount
+  def execute
+    notification_create_file
+    f = File.open(path,"w")
+    f.write(contents)
+    f.close
   end
 
-  def result
-    puts "塩の数は#{salt}"
-    puts "水の量は#{water}"
+  def undo_execute
+    notification_delete_file
+    File.delete(path)
   end
 
-
-end
-
-class SugarWater
-  attr_accessor :water,:sugar
-
-  def initialize(water,sugar)
-    @water = water
-    @sugar = sugar
+  def notification_create_file
+    puts "Create file : #{path}"
   end
 
-  def add_material(material_amount)
-    self.sugar += material_amount
-  end
-
-  def result
-    puts "砂糖の数は#{sugar}"
-    puts "水の量は#{water}"
-  end
-
-
-end
-
-class WaterWithMaterialBuilder
-  attr_accessor :water_with_material
-
-  def initialize(class_name)
-    @water_with_material = class_name.new(0,0)
-  end
-
-  def add_water(water_amount)
-    water_with_material.water += water_amount
-  end
-
-  def add_material(material_amount)
-    water_with_material.add_material(material_amount)
-  end
-
-  def result
-    water_with_material.result
+  def notification_delete_file
+    puts "Delete file : #{path}"
   end
 
 end
 
-class Director
-  attr_reader :builder
+file =CreateFile.new("test1223.txt","hello")
+file.execute
+class DeleteFile
+  attr_reader :path
+  attr_accessor :contents
 
-  def initialize(builder)
-    @builder = builder
+  def initialize(path)
+    @path = path
   end
 
-  def cook
-    builder.add_water(100)
-    builder.add_water(300)
-    builder.add_water(100)
-    builder.add_water(100)
-    builder.add_material(500)
-    builder.add_water(100)
-    builder.add_water(300)
-    builder.add_water(100)
-    builder.add_water(100)
-    builder.add_material(500)
+  def execute
+    notification_execute
+    if File.exists?(path)
+      self.contents = File.read(path)
+    end
+    File.delete(path)
+
   end
 
-  def result
-    builder.result
+  def undo_execute
+    notification_undo_execute
+    f = File.open(path,"w")
+    f.write(contents)
+    f.close
+  end
+
+  def notification_execute
+    puts "Delete file : #{path}"
+  end
+
+  def notification_undo_execute
+    puts "Delete file : #{path}をキャンセルしました"
+  end
+
+end
+file =DeleteFile.new("test1223.txt")
+file.execute
+file.undo_execute
+
+class CopyFile
+  attr_reader :source,:target
+  attr_accessor :contents
+
+  def initialize(source,target)
+    @source = source
+    @target = target
+  end
+
+  def execute
+    notification_execute
+    self.contents = File.read(source)
+    FileUtils.copy(source,target)
+  end
+
+  def undo_execute
+    notification_undo_execute
+    File.delete(target)
+    if self.contents
+      file =File.open(source,"w")
+      file.write(self.contents)
+      file.close
+    end
+  end
+
+  def notification_execute
+    puts "Copy file : #{source}"
+  end
+
+  def notification_undo_execute
+    puts "Copy file : #{source}をキャンセルしました"
   end
 
 end
 
-builder = WaterWithMaterialBuilder.new(SugarWater)
-director = Director.new(builder)
-director.cook
-director.result
+file = CopyFile.new("test1223.txt","test1223_1.txt")
+file.execute
+file.undo_execute
