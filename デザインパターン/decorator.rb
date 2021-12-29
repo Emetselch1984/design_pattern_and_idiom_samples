@@ -27,7 +27,7 @@ end
 
 
 
-複数のデコレータの共通部分(Decorator)
+# 複数のデコレータの共通部分(Decorator)
 class WriterDecorator
   def initialize(real_writer)
     @real_writer = real_writer
