@@ -16,6 +16,18 @@ p File.basename("ruby/y.tab.c", ".*")   #=> "y.tab"
 #    true
 #    false
 
+# find(*dirs, ignore_error: true) {|file| ... } -> nil
+# dir以下の全てのディレクトリやファイルを一つずつfind引数に渡して、
+# ブロックを実行する。
+require 'find'
+results = []
+Find.find('/tmp') {|f|
+  # /tmp/bar/以下の検索を省略
+  Find.prune if f == "/tmp/bar"
+  next unless File.file?(f)
+  results << f
+}
+
 # 命令・抽象的な表現(AbstractExpression)
 # Expression: 共通するコードを持つ
 class Expression
