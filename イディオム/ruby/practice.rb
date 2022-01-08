@@ -1,13 +1,13 @@
-module Foo
-  def hello
-    puts "hello_foo"
+class Foo
+  def initialize data
+    @key = data
   end
-  module Bar
-    module Baz
-      p Module.nesting   # => [Foo::Bar::Baz, Foo::Bar, Foo]
-      def hello
-        puts "hello"
-      end
-    end
+  private
+  def do_fuga
+    p 'secret'
   end
 end
+
+some = Foo.new 'XXX'
+some.instance_eval {p @key}
+some.instance_eval {do_fuga}
