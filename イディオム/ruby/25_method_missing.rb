@@ -9,6 +9,8 @@ class Foo
       else
         raise "#{lang} unknown"
       end
+      下記処理を書かないとエラーを返さない。
+      書かない場合、nilを返す
     else
       super
     end
