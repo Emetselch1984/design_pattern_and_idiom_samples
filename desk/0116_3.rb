@@ -23,12 +23,12 @@ require 'etc'
 
 class BankAccountProxy
   attr_reader :real_object,:owner_name
-  
+
   def initialize(real_object,owner_name)
     @real_object = real_object
     @owner_name = owner_name
   end
-  
+
   def balance
     check_access
     real_object.balance
@@ -49,7 +49,7 @@ class BankAccountProxy
       raise "不適切なアクセスです: #{owner_name}"
     end
   end
-  
+
 end
 
 bank_account = BankAccount.new(10000)
