@@ -1,20 +1,37 @@
-require 'singleton'
+class Report
+  attr_reader :title,:text,:formatter
+  TEXT = %w(text1 text2 text3).freeze
 
-class SingletonObject
-  include Singleton
-  attr_accessor :counter
-  
-  def initialize
-    @counter = 0
+  def initialize(formatter)
+    @title = default_title
+    @text = TEXT
+    @formatter = formatter
   end
+
+  def default_title
+    "report title"
+  end
+
+  def output_report
+    formatter.output_report(self)
+  end
+
 
 end
 
-obj1 = SingletonObject.instance
-obj1_counter = obj1.counter += 1
-puts obj1_counter
+class Formatter
+  def output_report(args)
+    raise "Called method!"
+  end
+end
 
-obj2 = SingletonObject.instance
-obj2_counter = obj2.counter += 1
-puts obj2_counter
+report = Report.new(Formatter.new)
+report.title
+report.text
+report.output_report
 
+class HTMLFormatter < Formatter
+  def output_report(report)
+
+  end
+end
