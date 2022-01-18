@@ -1,113 +1,75 @@
-class Duck
-  attr_reader :name
+require 'fileutils'
 
-  def initialize(name)
-    @name = name
+class CreateFile
+  attr_reader :path,:contents
+
+  def initialize(path,contents)
+    @path = path
+    @contents = contents
   end
 
-  def eat
-    puts eat_text
+  def execute
+    file = File.open(path,"w")
+    file.write(contents)
   end
 
-  def eat_text
-    "アヒル #{name} は食事中です"
+  def undo_execute
+    File.delete(path)
+  end
+end
+path = "file1.txt"
+contents = "hello world"
+
+command = CreateFile.new(path,contents)
+command.execute
+
+class CompositeCommand
+  attr_reader :commands
+
+  def initialize
+    @commands = []
+  end
+
+  def add_command(cmd)
+    commands << cmd
+  end
+
+  def clear_commands
+    commands.clear
+  end
+
+  def delete_command
+    puts commands.size
+    puts "delete #{commands[-1]}"
+    commands.delete_at(-1)
+    puts commands.size
+  end
+  
+  def execute
+    commands.each {|cmd| cmd.execute}
+  end
+
+  def undo_execute
+    commands.reverse.each {|cmd| cmd.undo_execute}
   end
 
 end
 
-duck = Duck.new("Alice")
-duck.eat
+path1 = "file1.txt"
+contents1 = "hello world"
 
-class Frog
-  attr_reader :name
+command1 = CreateFile.new(path1,contents1)
+path2 = "file2.txt"
+contents2 = "hello world"
 
-  def initialize(name)
-    @name = name
-  end
+command2 = CreateFile.new(path2,contents2)
 
-  def eat
-    puts eat_text
-  end
-
-  def eat_text
-    "カエル #{name} は食事中です"
-  end
-
-end
-
-frog = Frog.new("Alice")
-frog.eat
-
-class WaterLily
-  attr_reader :name
-
-  def initialize(name)
-    @name = name
-  end
-
-  def grow
-    puts grow_text
-  end
-
-  def grow_text
-    "睡蓮 #{name} は成長中です"
-  end
-
-end
-
-waterlily = WaterLily.new("Alice")
-waterlily.grow
-
-class OrganismFactory
-  attr_reader :animals,:plants
-  def initialize(number_animals,number_plants)
-    @animals = []
-    number_animals.times do |i|
-      animal = new_animal("動物 #{i + 1}")
-      @animals << animal
-    end
-    @plants = []
-    number_plants.times do |i|
-      plant = new_plant("植物 #{i + 1}")
-      @plants << plant
-    end
-
-  end
-
-  def get_animals
-    animals
-  end
-  def get_plants
-    plants
-  end
-
-  def animals_eat
-    animals.each do |animal|
-      animal.eat
-    end
-  end
-
-  def plants_grow
-    plants.each do |plant|
-      plant.grow
-    end
-  end
-
-end
-
-class FrogAndWaterLilyFactory < OrganismFactory
-  private
-
-  def new_animal(duck)
-    Duck.new(duck)
-  end
-
-  def new_plant(waterlily)
-    WaterLily.new(waterlily)
-  end
-end
-factory = FrogAndWaterLilyFactory.new(10,15)
-factory.get_animals
-factory.get_plants
-factory.animals_eat
-factory.plants_grow
+composite_command = CompositeCommand.new
+composite_command.add_command(command1)
+composite_command.add_command(command2)
+composite_command.clear_commands
+composite_command.add_command(command1)
+composite_command.add_command(command2)
+composite_command.delete_command
+composite_command.add_command(command2)
+composite_command.execute
