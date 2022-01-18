@@ -85,6 +85,17 @@ class CompositeCommand < Command
     @commands << cmd
   end
 
+  def clear_commands
+    commands.clear
+  end
+
+  def delete_command
+    puts commands.size
+    puts "delete #{commands[-1]}"
+    commands.delete_at(-1)
+    puts commands.size
+  end
+
   def execute
     @commands.each { |cmd| cmd.execute }
   end
