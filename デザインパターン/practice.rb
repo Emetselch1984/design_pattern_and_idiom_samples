@@ -1,9 +1,24 @@
 require 'fileutils'
 
-class CreateFile
+class Command
+  attr_reader :description
+
+  def initialize(description)
+    @description = description
+  end
+
+  def execute ;end
+
+  def undo_execute ;end
+
+
+end
+
+class CreateFile < Command
   attr_reader :path,:contents
 
   def initialize(path,contents)
+    super("Create file : #{path}")
     @path = path
     @contents = contents
   end
@@ -53,6 +68,12 @@ class CompositeCommand
     commands.reverse.each {|cmd| cmd.undo_execute}
   end
 
+  def description
+    description = ""
+    commands.each {|cmd| description+= cmd.description + "\n"}
+    description
+  end
+
 end
 
 path1 = "file1.txt"
@@ -72,4 +93,33 @@ composite_command.add_command(command1)
 composite_command.add_command(command2)
 composite_command.delete_command
 composite_command.add_command(command2)
-composite_command.execute
+puts composite_command.description
+
+class DeleteFile < Command
+  attr_reader :path
+  attr_accessor :contents
+
+  def initialize(path)
+    super("Delete file : #{path}")
+    @path = path
+    @contents = nil
+  end
+
+  def execute
+    if File.exist?(path)
+      self.contents = File.read(path)
+    end
+    File.delete(path)
+  end
+
+  def undo_execute
+    f = File.open(path, "w")
+    f.write(self.contents)
+    f.close
+  end
+
+end
+
+delete_command = DeleteFile.new(path1)
+delete_command.execute
+delete_command.undo_execute
